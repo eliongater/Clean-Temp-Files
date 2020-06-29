@@ -19,7 +19,7 @@ $host.ui.RawUI.WindowTitle = "Clean Browser Temp Files"
 
 Function Cleanup {
     # Set Date for Log
-    $LogDate = Get-Date -format "MM-d-yy-HHmm"
+    $LogDate = Get-Date -Format "MM-d-yy-HHmm"
 
     # Ask for confirmation to delete users Downloaded files - Anything older than 90 days
     $DeleteOldDownloads = Read-Host "Would you like to delete files older than 90 days in the Downloads folder for All Users? (Y/N)"
@@ -33,6 +33,9 @@ Function Cleanup {
     # Set Deletion Date for Azure Logs Folder
     $DelAZLogDate = (Get-Date).AddDays(-7)
 
+    # Set Deletion Date for LFSAgent Logs Folder
+    $DelLFSAGentLogDate = (Get-Date).AddDays(-30)
+
     # Ask for Confirmation to Empty Recycle Bin for All Users
     $CleanBin = Read-Host "Would you like to empty the Recycle Bin for All Users? (Y/N)"
 
@@ -42,7 +45,7 @@ Function Cleanup {
     @{ Name = "Size (GB)" ; Expression = { "{0:N1}" -f ( $_.Size / 1gb) } },
     @{ Name = "FreeSpace (GB)" ; Expression = { "{0:N1}" -f ( $_.Freespace / 1gb ) } },
     @{ Name = "PercentFree" ; Expression = { "{0:P1}" -f ( $_.FreeSpace / $_.Size ) } } |
-    Format-Table -AutoSize | Out-String
+        Format-Table -AutoSize | Out-String
 
     # Define log file location
     $Cleanuplog = "C:\users\$env:USERNAME\Cleanup$LogDate.log"
@@ -86,7 +89,7 @@ Function Cleanup {
             # Comment out the following line to remove the Chrome Write Font Cache too.
             # Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\ChromeDWriteFontCache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             # Check Chrome Profiles. It looks as though when creating profiles, it just numbers them Profile 1, Profile 2 etc.
-            $Profiles = Get-ChildItem -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data" | Select-Object Name | Where-Object Name -like "Profile*"
+            $Profiles = Get-ChildItem -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data" | Select-Object Name | Where-Object Name -Like "Profile*"
             foreach ($Profile in $Profiles) {
                 $Profile = $Profile.Name 
                 Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Profile\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
@@ -171,7 +174,7 @@ Function Cleanup {
         $Folders = Get-ChildItem -Path "C:\inetpub\logs\LogFiles\" | Select-Object Name
         foreach ($Folder in $Folders) {
             $folder = $Folder.Name
-            Remove-Item -Path "C:\inetpub\logs\LogFiles\$Folder\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose | Where-Object LastWriteTime -lt $DelInetLogDate
+            Remove-Item -Path "C:\inetpub\logs\LogFiles\$Folder\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose | Where-Object LastWriteTime -LT $DelInetLogDate
         }
         Write-Host -ForegroundColor Yellow "Done...`n" 
     }
@@ -210,7 +213,7 @@ Function Cleanup {
         Write-Host -ForegroundColor Yellow "Deleting files older than 90 days from User Downloads folder`n"
         Foreach ($user in $Users) {
             $UserDownloads = "C:\Users\$user\Downloads"
-            $OldFiles = Get-ChildItem -Path "$UserDownloads\" -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -lt $DelDownloadsDate
+            $OldFiles = Get-ChildItem -Path "$UserDownloads\" -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -LT $DelDownloadsDate
             foreach ($file in $OldFiles) {
                 Remove-Item -Path "$UserDownloads\$file" -Force -ErrorAction SilentlyContinue -Verbose
             }
@@ -222,12 +225,23 @@ Function Cleanup {
     if (Test-Path "C:\WindowsAzure\Logs") {
         Write-Host -ForegroundColor Yellow "Deleting files older than 7 days from Azure Log folder`n"
         $AzureLogs = "C:\WindowsAzure\Logs"
-        $OldFiles = Get-ChildItem -Path "$AzureLogs\" -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -lt $DelAZLogDate
+        $OldFiles = Get-ChildItem -Path "$AzureLogs\" -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -LT $DelAZLogDate
         foreach ($file in $OldFiles) {
             Remove-Item -Path "$AzureLogs\$file" -Force -ErrorAction SilentlyContinue -Verbose
         }
         Write-Host -ForegroundColor Yellow "Done...`n"
     } 
+
+    # Delete files older than 30 days from LFSAgent Log folder https://www.lepide.com/
+    if (Test-Path "C:\Windows\LFSAgent\Logs") {
+        Write-Host -ForegroundColor Yellow "Deleting files older than 30 days from LFSAgent Log folder`n"
+        $LFSAgentLogs = "C:\Windows\LFSAgent\Logs"
+        $OldFiles = Get-ChildItem -Path "$LFSAgentLogs\" -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -LT $DelLFSAGentLogDate
+        foreach ($file in $OldFiles) {
+            Remove-Item -Path "$LFSAgentLogs\$file" -Force -ErrorAction SilentlyContinue -Verbose
+        }
+        Write-Host -ForegroundColor Yellow "Done...`n"
+    }         
 
     # Empty Recycle Bin
     if ($Cleanbin -eq 'Y') {
@@ -279,7 +293,7 @@ Function Cleanup {
     @{ Name = "Size (GB)" ; Expression = { "{0:N1}" -f ( $_.Size / 1gb) } },
     @{ Name = "FreeSpace (GB)" ; Expression = { "{0:N1}" -f ( $_.Freespace / 1gb ) } },
     @{ Name = "PercentFree" ; Expression = { "{0:P1}" -f ( $_.FreeSpace / $_.Size ) } } |
-    Format-Table -AutoSize | Out-String
+        Format-Table -AutoSize | Out-String
 
     # Sends some before and after info for ticketing purposes
     Write-Host -ForegroundColor Green "Before: $Before"
