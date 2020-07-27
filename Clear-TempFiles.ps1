@@ -33,6 +33,9 @@ Function Cleanup {
     # Set Deletion Date for Azure Logs Folder
     $DelAZLogDate = (Get-Date).AddDays(-7)
 
+    # Set Deletion Date for Azure Logs Folder
+    $DelOfficeCacheDate = (Get-Date).AddDays(-7)
+
     # Set Deletion Date for LFSAgent Logs Folder
     $DelLFSAGentLogDate = (Get-Date).AddDays(-30)
 
@@ -231,6 +234,19 @@ Function Cleanup {
         }
         Write-Host -ForegroundColor Yellow "Done...`n"
     } 
+
+    # Delete files older than 7 days from Office Cache Folder
+    Write-Host -ForegroundColor Yellow "Clearing Office Cache Folder`n"
+    Foreach ($user in $Users) {
+        $officecache = "C:\Users\$user\AppData\Local\Microsoft\Office\16.0\GrooveFileCache"
+        if (Test-Path $officecache) {
+            $OldFiles = Get-ChildItem -Path "$officecache\" -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -LT $DelOfficeCacheDate 
+            foreach ($file in $OldFiles) {
+                Remove-Item -Path "$officecache\$file" -Force -ErrorAction SilentlyContinue -Verbose
+            }
+        } 
+    }
+    Write-Host -ForegroundColor Yellow "Done...`n"
 
     # Delete files older than 30 days from LFSAgent Log folder https://www.lepide.com/
     if (Test-Path "C:\Windows\LFSAgent\Logs") {
