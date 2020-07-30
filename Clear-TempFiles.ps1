@@ -33,7 +33,7 @@ Function Cleanup {
     # Set Deletion Date for Azure Logs Folder
     $DelAZLogDate = (Get-Date).AddDays(-7)
 
-    # Set Deletion Date for Azure Logs Folder
+    # Set Deletion Date for Office File Cache Folder
     $DelOfficeCacheDate = (Get-Date).AddDays(-7)
 
     # Set Deletion Date for LFSAgent Logs Folder
