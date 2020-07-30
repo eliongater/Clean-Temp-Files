@@ -92,15 +92,15 @@ Function Cleanup {
             # Comment out the following line to remove the Chrome Write Font Cache too.
             # Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\ChromeDWriteFontCache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             # Check Chrome Profiles. It looks as though when creating profiles, it just numbers them Profile 1, Profile 2 etc.
-            $Profiles = Get-ChildItem -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data" | Select-Object Name | Where-Object Name -Like "Profile*"
-            foreach ($Profile in $Profiles) {
-                $Profile = $Profile.Name 
-                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Profile\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Profile\Cache2\entries\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
-                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Profile\Cookies" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Profile\Media Cache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Profile\Cookies-Journal" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Profile\JumpListIconsOld" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            $Accounts = Get-ChildItem -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data" | Select-Object Name | Where-Object Name -Like "Profile*"
+            foreach ($Account in $Accounts) {
+                $Account = $Account.Name 
+                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\Cache2\entries\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
+                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\Cookies" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\Media Cache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\Cookies-Journal" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+                Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\JumpListIconsOld" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             }
         }
     }
