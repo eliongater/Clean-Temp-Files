@@ -30,6 +30,9 @@ Function Cleanup {
     # Set Deletion Date for Inetpub Log Folder
     $DelInetLogDate = (Get-Date).AddDays(-30)
 
+    # Set Deletion Date for System32 Log Folder
+    $System32LogDate = (Get-Date).AddMonths(-2)
+
     # Set Deletion Date for Azure Logs Folder
     $DelAZLogDate = (Get-Date).AddDays(-7)
 
@@ -65,9 +68,9 @@ Function Cleanup {
     Write-Host -ForegroundColor Green "Beginning Script...`n"
 
     # Clear Firefox Cache
-    Write-Host -ForegroundColor Green "Clearing Firefox Cache`n"
-    Foreach ($user in $Users) {
-        if (Test-Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles") {
+    if (Test-Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles") {
+        Write-Host -ForegroundColor Green "Clearing Firefox Cache`n"
+        Foreach ($user in $Users) {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\cache2\entries\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\thumbnails\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
@@ -76,13 +79,12 @@ Function Cleanup {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\chromeappsstore.sqlite" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\OfflineCache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         }
+        Write-Host -ForegroundColor Yellow "Done...`n"
     }
-    Write-Host -ForegroundColor Yellow "Done...`n"
-    
     # Clear Google Chrome
-    Write-Host -ForegroundColor Green "Clearing Google Chrome Cache`n"
-    Foreach ($user in $Users) {
-        if (Test-Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data") {
+    if (Test-Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data") {
+        Write-Host -ForegroundColor Green "Clearing Google Chrome Cache`n"
+        Foreach ($user in $Users) {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\Cache2\entries\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\Cookies" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
@@ -91,9 +93,10 @@ Function Cleanup {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\JumpListIconsOld" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             # Comment out the following line to remove the Chrome Write Font Cache too.
             # Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\ChromeDWriteFontCache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+
             # Check Chrome Profiles. It looks as though when creating profiles, it just numbers them Profile 1, Profile 2 etc.
-            $Accounts = Get-ChildItem -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data" | Select-Object Name | Where-Object Name -Like "Profile*"
-            foreach ($Account in $Accounts) {
+            $Profiles = Get-ChildItem -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data" | Select-Object Name | Where-Object Name -Like "Profile*"
+            foreach ($Account in $Profiles) {
                 $Account = $Account.Name 
                 Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
                 Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\Cache2\entries\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
@@ -103,8 +106,8 @@ Function Cleanup {
                 Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\$Account\JumpListIconsOld" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             }
         }
+        Write-Host -ForegroundColor Yellow "Done...`n"
     }
-    Write-Host -ForegroundColor Yellow "Done...`n"
 
     # Clear Internet Explorer & Edge
     Write-Host -ForegroundColor Yellow "Clearing Internet Explorer & Edge Cache`n"
@@ -116,31 +119,32 @@ Function Cleanup {
     Write-Host -ForegroundColor Yellow "Done...`n"
 
     # Clear Chromium
-    Write-Host -ForegroundColor Yellow "Clearing Chromium Cache`n"
-    Foreach ($user in $Users) {
-        if (Test-Path "C:\Users\$user\AppData\Local\Chromium") {
+    if (Test-Path "C:\Users\$user\AppData\Local\Chromium") {
+        Write-Host -ForegroundColor Yellow "Clearing Chromium Cache`n"
+        Foreach ($user in $Users) {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Chromium\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Chromium\User Data\Default\GPUCache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Chromium\User Data\Default\Media Cache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Chromium\User Data\Default\Pepper Data" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Chromium\User Data\Default\Application Cache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         }
+        Write-Host -ForegroundColor Yellow "Done...`n" 
     }
-    Write-Host -ForegroundColor Yellow "Done...`n" 
-
+    
     # Clear Opera
-    Write-Host -ForegroundColor Yellow "Clearing Opera Cache`n"
-    Foreach ($user in $Users) {
-        if (Test-Path "C:\Users\$user\AppData\Local\Opera Software") {
+    if (Test-Path "C:\Users\$user\AppData\Local\Opera Software") {
+        Write-Host -ForegroundColor Yellow "Clearing Opera Cache`n"
+        Foreach ($user in $Users) {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Opera Software\Opera Stable\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         } 
+
+        Write-Host -ForegroundColor Yellow "Done...`n"
     }
-    Write-Host -ForegroundColor Yellow "Done...`n"
 
     # Clear Yandex
-    Write-Host -ForegroundColor Yellow "Clearing Yandex Cache`n"
-    Foreach ($user in $Users) {
-        if (Test-Path "C:\Users\$user\AppData\Local\Yandex") {
+    if (Test-Path "C:\Users\$user\AppData\Local\Yandex") {
+        Write-Host -ForegroundColor Yellow "Clearing Yandex Cache`n"
+        Foreach ($user in $Users) {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Yandex\YandexBrowser\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Yandex\YandexBrowser\User Data\Default\GPUCache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Yandex\YandexBrowser\User Data\Default\Media Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
@@ -148,8 +152,8 @@ Function Cleanup {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Yandex\YandexBrowser\User Data\Default\Application Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Yandex\YandexBrowser\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         } 
+        Write-Host -ForegroundColor Yellow "Done...`n"
     }
-    Write-Host -ForegroundColor Yellow "Done...`n"
 
     # Clear User Temp Folders
     Write-Host -ForegroundColor Yellow "Clearing User Temp Folders`n"
@@ -168,8 +172,13 @@ Function Cleanup {
         Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         Remove-Item -Path "C:\Windows\Logs\CBS\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         Remove-Item -Path "C:\ProgramData\Microsoft\Windows\WER\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+        # Only grab log files sitting in the root of the Logfiles directory
+        $Sys32Files = Get-ChildItem -Path "C:\Windows\System32\LogFiles" | Where-Object { ($_.name -like "*.log") -and ($_.lastwritetime -lt $System32LogDate) }
+        foreach ($File in $Sys32Files) {
+            Remove-Item -Path "C:\Windows\System32\LogFiles\$($file.name)" -Force -ErrorAction SilentlyContinue -Verbose
+        }
     }
-    Write-Host -ForegroundColor Yellow "Done...`n"        
+    Write-Host -ForegroundColor Yellow "Done...`n"          
 
     # Clear Inetpub Logs Folder
     if (Test-Path "C:\inetpub\logs\LogFiles\") {
