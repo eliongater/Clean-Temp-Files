@@ -42,6 +42,9 @@ Function Cleanup {
     # Set Deletion Date for LFSAgent Logs Folder
     $DelLFSAGentLogDate = (Get-Date).AddDays(-30)
 
+    # Set Deletion Date for SotiMobicontroller Logs
+    $DelSotiLogDate = (Get-Date).AddYears(-1)
+
     # Ask for Confirmation to Empty Recycle Bin for All Users
     $CleanBin = Read-Host "Would you like to empty the Recycle Bin for All Users? (Y/N)"
 
@@ -267,6 +270,16 @@ Function Cleanup {
         }
         Write-Host -ForegroundColor Yellow "Done...`n"
     }         
+
+    # Delete SOTI MobiController Log files older than 1 year
+    if (Test-Path "C:\Program Files (x86)\SOTI\MobiControl") {
+        Write-Host -ForegroundColor Yellow "Deleting SOTI MobiController Log files older than 1 year`n"
+        $SotiLogFiles = Get-ChildItem -Path "C:\Program Files (x86)\SOTI\MobiControl" | Where-Object { ($_.name -like "*Device*.log" -or $_.name -like "*Server*.log" ) -and ($_.lastwritetime -lt $DelSotiLogDate) }
+        foreach ($File in $SotiLogFiles) {
+            Remove-Item -Path "C:\Program Files (x86)\SOTI\MobiControl\$($file.name)" -Force -ErrorAction SilentlyContinue -Verbose
+        }
+        Write-Host -ForegroundColor Yellow "Done...`n"
+    }
 
     # Empty Recycle Bin
     if ($Cleanbin -eq 'Y') {
