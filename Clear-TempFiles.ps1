@@ -48,6 +48,15 @@ Function Cleanup {
     # Ask for Confirmation to Empty Recycle Bin for All Users
     $CleanBin = Read-Host "Would you like to empty the Recycle Bin for All Users? (Y/N)"
 
+    # Get the size of the Windows Updates folder (SoftwareDistribution)
+    $WUfoldersize = "{0:N2} GB" -f ((Get-ChildItem "C:\Windows\SoftwareDistribution" -Recurse | Measure-Object Length -s).sum / 1Gb)
+
+    # Ask the user if they would like to clean the Windows Update folder
+    if ($WUfoldersize -gt "1.5 Gb") {
+        Write-Host "The Windows Update folder is $WUFoldersize"
+        $CleanWU = Read-Host "Do you want clean the Software Distribution folder and reset Windows Updates? (Y/N)"
+    }
+
     # Get Disk Size
     $Before = Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DriveType -eq "3" } | Select-Object SystemName,
     @{ Name = "Drive" ; Expression = { ( $_.DeviceID ) } },
@@ -291,6 +300,33 @@ Function Cleanup {
         Write-Host -ForegroundColor Yellow "Done...`n"
     }
 
+    # Delete Windows Updates Folder (SoftwareDistribution) and reset the Windows Update Service
+    if ($CleanWU -eq 'Y') { 
+        Write-Host -ForegroundColor Yellow "Restarting Windows Update Service and Deleting SoftwareDistribution Folder`n"
+        # Stop the Windows Update service
+        try {
+            Stop-Service -Name wuauserv
+        }
+        catch {
+            $ErrorMessage = $_.Exception.Message
+            Write-Warning "$ErrorMessage" 
+        }
+        # Delete the folder
+        Remove-Item "C:\Windows\SoftwareDistribution" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+        Start-Sleep -s 3
+
+        # Start the Windows Update service
+        try {
+            Start-Service -Name wuauserv
+        }
+        catch {
+            $ErrorMessage = $_.Exception.Message
+            Write-Warning "$ErrorMessage" 
+        }
+        Write-Host -ForegroundColor Yellow "Done..."
+        Write-Host -ForegroundColor Yellow "Please rerun Windows Update to pull down the latest updates `n"
+    }
+
     # Empty Recycle Bin
     if ($Cleanbin -eq 'Y') {
         Write-Host -ForegroundColor Green "Cleaning Recycle Bin`n"
@@ -346,6 +382,13 @@ Function Cleanup {
     # Sends some before and after info for ticketing purposes
     Write-Host -ForegroundColor Green "Before: $Before"
     Write-Host -ForegroundColor Green "After: $After"
+
+
+    # Another reminder about running Windows update if needed as it would get lost in all the scrolling text.
+    if ($CleanWU -eq 'Y') { 
+        Write-Host -ForegroundColor Yellow "`nPlease rerun Windows Update to pull down the latest updates. `n"
+    }
+
     Start-Sleep -s 15
 
     # Completed Successfully!
