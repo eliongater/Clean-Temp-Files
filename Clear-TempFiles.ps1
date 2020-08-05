@@ -282,9 +282,13 @@ Function Cleanup {
     }
 
     # Delete old Cylance Log files
-    $OldCylanceLogFiles = Get-ChildItem -Path "C:\Program Files\Cylance\Desktop" | Where-Object name -Like "cylog-*.log"
-    foreach ($File in $OldCylanceLogFiles) {
-        Remove-Item -Path "C:\Program Files\Cylance\Desktop\$($file.name)" -Force -ErrorAction SilentlyContinue -Verbose
+    if (Test-Path "C:\Program Files\Cylance\Desktop") {
+        Write-Host -ForegroundColor Yellow "Deleting Old Cylance Log files`n"
+        $OldCylanceLogFiles = Get-ChildItem -Path "C:\Program Files\Cylance\Desktop" | Where-Object name -Like "cylog-*.log"
+        foreach ($File in $OldCylanceLogFiles) {
+            Remove-Item -Path "C:\Program Files\Cylance\Desktop\$($file.name)" -Force -ErrorAction SilentlyContinue -Verbose
+        }
+        Write-Host -ForegroundColor Yellow "Done...`n"
     }
 
     # Empty Recycle Bin
