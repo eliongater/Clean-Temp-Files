@@ -281,6 +281,12 @@ Function Cleanup {
         Write-Host -ForegroundColor Yellow "Done...`n"
     }
 
+    # Delete old Cylance Log files
+    $OldCylanceLogFiles = Get-ChildItem -Path "C:\Program Files\Cylance\Desktop" | Where-Object name -Like "cylog-*.log"
+    foreach ($File in $OldCylanceLogFiles) {
+        Remove-Item -Path "C:\Program Files\Cylance\Desktop\$($file.name)" -Force -ErrorAction SilentlyContinue -Verbose
+    }
+
     # Empty Recycle Bin
     if ($Cleanbin -eq 'Y') {
         Write-Host -ForegroundColor Green "Cleaning Recycle Bin`n"
