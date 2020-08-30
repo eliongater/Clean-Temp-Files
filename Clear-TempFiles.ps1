@@ -232,6 +232,11 @@ Function Cleanup {
     }
     Write-Host -ForegroundColor Yellow "Done...`n"
 
+    # Clear HP Support Assistant Installation Folder
+    if (Test-Path "C:\swsetup") {
+        Remove-Item -Path "C:\swsetup" -Force -ErrorAction SilentlyContinue -Verbose -WhatIf
+    } 
+
     # Delete files older than 90 days from Downloads folder
     if ($DeleteOldDownloads -eq 'Y') { 
         Write-Host -ForegroundColor Yellow "Deleting files older than 90 days from User Downloads folder`n"
