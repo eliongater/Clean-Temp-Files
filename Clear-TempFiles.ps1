@@ -68,7 +68,7 @@ Function Cleanup {
     Format-Table -AutoSize | Out-String
 
     # Define log file location
-    $Cleanuplog = "C:\users\$env:USERNAME\Cleanup$LogDate.log"
+    $Cleanuplog = "$env:USERPROFILE\Cleanup$LogDate.log"
 
     # Start Logging
     Start-Transcript -Path "$CleanupLog"
