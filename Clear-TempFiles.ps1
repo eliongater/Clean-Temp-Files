@@ -9,7 +9,9 @@ if ((CheckAdmin) -eq $false) {
         # could not elevate, quit
     }
     else {
-        Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -ExecutionPolicy Bypass -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition)) | Out-Null
+        # Detecting Powershell (powershell.exe) or Powershell Core (pwsh), will return true if Powershell Core (pwsh)
+        if ($IsCoreCLR) { $PowerShellCmdLine = "pwsh.exe" } else { $PowerShellCmdLine = "powershell.exe" }
+        Start-Process "$PSHOME\$PowerShellCmdLine" -Verb RunAs -ArgumentList ('-noprofile -ExecutionPolicy Bypass -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition)) | Out-Null
     }
     Exit
 }
@@ -63,7 +65,7 @@ Function Cleanup {
     @{ Name = "Size (GB)" ; Expression = { "{0:N1}" -f ( $_.Size / 1gb) } },
     @{ Name = "FreeSpace (GB)" ; Expression = { "{0:N1}" -f ( $_.Freespace / 1gb ) } },
     @{ Name = "PercentFree" ; Expression = { "{0:P1}" -f ( $_.FreeSpace / $_.Size ) } } |
-        Format-Table -AutoSize | Out-String
+    Format-Table -AutoSize | Out-String
 
     # Define log file location
     $Cleanuplog = "C:\users\$env:USERNAME\Cleanup$LogDate.log"
@@ -382,7 +384,7 @@ Function Cleanup {
     @{ Name = "Size (GB)" ; Expression = { "{0:N1}" -f ( $_.Size / 1gb) } },
     @{ Name = "FreeSpace (GB)" ; Expression = { "{0:N1}" -f ( $_.Freespace / 1gb ) } },
     @{ Name = "PercentFree" ; Expression = { "{0:P1}" -f ( $_.FreeSpace / $_.Size ) } } |
-        Format-Table -AutoSize | Out-String
+    Format-Table -AutoSize | Out-String
 
     # Sends some before and after info for ticketing purposes
     Write-Host -ForegroundColor Green "Before: $Before"
