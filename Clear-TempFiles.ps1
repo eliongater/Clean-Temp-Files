@@ -183,13 +183,13 @@ Function Cleanup {
     Write-Host -ForegroundColor Yellow "Clearing Windows Temp Folder`n"
     Foreach ($user in $Users) {
         Remove-Item -Path "C:\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-        Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-        Remove-Item -Path "C:\Windows\Logs\CBS\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-        Remove-Item -Path "C:\ProgramData\Microsoft\Windows\WER\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+        Remove-Item -Path "$env:windir\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+        Remove-Item -Path "$env:windir\Logs\CBS\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+        Remove-Item -Path "$env:ProgramData\Microsoft\Windows\WER\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         # Only grab log files sitting in the root of the Logfiles directory
-        $Sys32Files = Get-ChildItem -Path "C:\Windows\System32\LogFiles" | Where-Object { ($_.name -like "*.log") -and ($_.lastwritetime -lt $System32LogDate) }
+        $Sys32Files = Get-ChildItem -Path "$env:windir\System32\LogFiles" | Where-Object { ($_.name -like "*.log") -and ($_.lastwritetime -lt $System32LogDate) }
         foreach ($File in $Sys32Files) {
-            Remove-Item -Path "C:\Windows\System32\LogFiles\$($file.name)" -Force -ErrorAction SilentlyContinue -Verbose
+            Remove-Item -Path "$env:windir\System32\LogFiles\$($file.name)" -Force -ErrorAction SilentlyContinue -Verbose
         }
     }
     Write-Host -ForegroundColor Yellow "Done...`n"          
@@ -277,9 +277,9 @@ Function Cleanup {
     Write-Host -ForegroundColor Yellow "Done...`n"
 
     # Delete files older than 30 days from LFSAgent Log folder https://www.lepide.com/
-    if (Test-Path "C:\Windows\LFSAgent\Logs") {
+    if (Test-Path "$env:windir\LFSAgent\Logs") {
         Write-Host -ForegroundColor Yellow "Deleting files older than 30 days from LFSAgent Log folder`n"
-        $LFSAgentLogs = "C:\Windows\LFSAgent\Logs"
+        $LFSAgentLogs = "$env:windir\LFSAgent\Logs"
         $OldFiles = Get-ChildItem -Path "$LFSAgentLogs\" -Recurse -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -LT $DelLFSAGentLogDate
         foreach ($file in $OldFiles) {
             Remove-Item -Path "$LFSAgentLogs\$file" -Force -ErrorAction SilentlyContinue -Verbose
@@ -319,7 +319,7 @@ Function Cleanup {
             Write-Warning "$ErrorMessage" 
         }
         # Delete the folder
-        Remove-Item "C:\Windows\SoftwareDistribution" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+        Remove-Item "$env:windir\SoftwareDistribution" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         Start-Sleep -s 3
 
         # Start the Windows Update service
