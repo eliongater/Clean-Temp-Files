@@ -406,7 +406,8 @@ Function Cleanup {
     Stop-Transcript
 }
 
-$TempItems = Get-ChildItem "C:\Temp" -Recurse
+# Listing all files in C:\Temp\* recursively, using Force parameter displays hidden files.
+$TempItems = Get-ChildItem -Path "C:\Temp\*" -Recurse -Force
 if ($TempItems.count -gt 1) {
     Write-Warning "There are files within C:\Temp, please verify that important files are out of this location"
     $Cont = Read-Host "Continue with the cleanup script [Y/N]"
