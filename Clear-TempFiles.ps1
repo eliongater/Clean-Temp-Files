@@ -51,7 +51,7 @@ Function Cleanup {
     $CleanBin = Read-Host "Would you like to empty the Recycle Bin for All Users? (Y/N)"
 
     # Get the size of the Windows Updates folder (SoftwareDistribution)
-    $WUfoldersize = "{0:N2} GB" -f ((Get-ChildItem "C:\Windows\SoftwareDistribution" -Recurse | Measure-Object Length -s).sum / 1Gb)
+    $WUfoldersize = "{0:N2} GB" -f ((Get-ChildItem "$env:windir\SoftwareDistribution" -Recurse | Measure-Object Length -s).sum / 1Gb)
 
     # Ask the user if they would like to clean the Windows Update folder
     if ($WUfoldersize -gt "1.5 Gb") {
