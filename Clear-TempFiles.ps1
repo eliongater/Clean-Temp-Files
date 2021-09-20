@@ -1,5 +1,5 @@
 #Calling Powershell as Admin and setting Execution Policy to Bypass to avoid Cannot run Scripts error
-([switch]$Elevated)
+param ([switch]$Elevated)
 function CheckAdmin {
     $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
     $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
@@ -9,7 +9,8 @@ if ((CheckAdmin) -eq $false) {
         # could not elevate, quit
     }
     else {
-        Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -ExecutionPolicy Bypass -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition)) | Out-Null
+        $CommandLine = "-noprofile -ExecutionPolicy Bypass -File `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments + " -Elevated"
+        Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList $CommandLine
     }
     Exit
 }
