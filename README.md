@@ -48,7 +48,7 @@ v2.5:
 * Added Disk Size, Free Space, % Free. Before and After - Code Borrowed from [Technet Article](https://gallery.technet.microsoft.com/scriptcenter/Clean-up-your-C-Drive-bc7bb3ed)
 * Write to Text File
 * Tabbed in code, cleaner to read
-* Updated Alias' to Full Content for easier maintaince
+* Updated Alias' to Full Content for easier maintenance
 
 v2.4:
 
