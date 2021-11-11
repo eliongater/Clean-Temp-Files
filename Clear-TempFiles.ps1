@@ -1,5 +1,5 @@
 #Calling Powershell as Admin and setting Execution Policy to Bypass to avoid Cannot run Scripts error
-([switch]$Elevated)
+param ([switch]$Elevated)
 function CheckAdmin {
     $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
     $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
@@ -11,7 +11,8 @@ if ((CheckAdmin) -eq $false) {
     else {
         # Detecting Powershell (powershell.exe) or Powershell Core (pwsh), will return true if Powershell Core (pwsh)
         if ($IsCoreCLR) { $PowerShellCmdLine = "pwsh.exe" } else { $PowerShellCmdLine = "powershell.exe" }
-        Start-Process "$PSHOME\$PowerShellCmdLine" -Verb RunAs -ArgumentList ('-noprofile -ExecutionPolicy Bypass -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition)) | Out-Null
+        $CommandLine = "-noprofile -ExecutionPolicy Bypass -File `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments + ' -Elevated'
+        Start-Process "$PSHOME\$PowerShellCmdLine" -Verb RunAs -ArgumentList $CommandLine
     }
     Exit
 }
@@ -51,11 +52,11 @@ Function Cleanup {
     $CleanBin = Read-Host "Would you like to empty the Recycle Bin for All Users? (Y/N)"
 
     # Get the size of the Windows Updates folder (SoftwareDistribution)
-    $WUfoldersize = "{0:N2} GB" -f ((Get-ChildItem "$env:windir\SoftwareDistribution" -Recurse | Measure-Object Length -s).sum / 1Gb)
+    $WUfoldersize = (Get-ChildItem "$env:windir\SoftwareDistribution" -Recurse | Measure-Object Length -s).sum / 1Gb
 
     # Ask the user if they would like to clean the Windows Update folder
-    if ($WUfoldersize -gt "1.5 Gb") {
-        Write-Host "The Windows Update folder is $WUFoldersize"
+    if ($WUfoldersize -gt 1.5) {
+        Write-Host "The Windows Update folder is" ("{0:N2} GB" -f $WUFoldersize)
         $CleanWU = Read-Host "Do you want clean the Software Distribution folder and reset Windows Updates? (Y/N)"
     }
 
@@ -82,23 +83,23 @@ Function Cleanup {
     Write-Host -ForegroundColor Green "Beginning Script...`n"
 
     # Clear Firefox Cache
-    if (Test-Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles") {
-        Write-Host -ForegroundColor Green "Clearing Firefox Cache`n"
-        Foreach ($user in $Users) {
-            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\cache2\entries\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\thumbnails\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\cookies.sqlite" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\webappsstore.sqlite" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\chromeappsstore.sqlite" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
-            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*.default\OfflineCache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+    Write-Host -ForegroundColor Green "Clearing Firefox Cache`n"
+    Foreach ($user in $Users) {
+        if (Test-Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles") {
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*\cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*\cache2\entries\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*\thumbnails\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*\cookies.sqlite" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*\webappsstore.sqlite" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*\chromeappsstore.sqlite" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Mozilla\Firefox\Profiles\*\OfflineCache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         }
         Write-Host -ForegroundColor Yellow "Done...`n"
     }
     # Clear Google Chrome
-    if (Test-Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data") {
-        Write-Host -ForegroundColor Green "Clearing Google Chrome Cache`n"
-        Foreach ($user in $Users) {
+    Write-Host -ForegroundColor Green "Clearing Google Chrome Cache`n"
+    Foreach ($user in $Users) {
+        if (Test-Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data") {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\Cache2\entries\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Google\Chrome\User Data\Default\Cookies" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
@@ -133,9 +134,9 @@ Function Cleanup {
     Write-Host -ForegroundColor Yellow "Done...`n"
 
     # Clear Chromium
-    if (Test-Path "C:\Users\$user\AppData\Local\Chromium") {
-        Write-Host -ForegroundColor Yellow "Clearing Chromium Cache`n"
-        Foreach ($user in $Users) {
+    Write-Host -ForegroundColor Yellow "Clearing Chromium Cache`n"
+    Foreach ($user in $Users) {
+        if (Test-Path "C:\Users\$user\AppData\Local\Chromium") {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Chromium\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Chromium\User Data\Default\GPUCache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Chromium\User Data\Default\Media Cache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
@@ -146,19 +147,18 @@ Function Cleanup {
     }
     
     # Clear Opera
-    if (Test-Path "C:\Users\$user\AppData\Local\Opera Software") {
-        Write-Host -ForegroundColor Yellow "Clearing Opera Cache`n"
-        Foreach ($user in $Users) {
+    Write-Host -ForegroundColor Yellow "Clearing Opera Cache`n"
+    Foreach ($user in $Users) {
+        if (Test-Path "C:\Users\$user\AppData\Local\Opera Software") {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Opera Software\Opera Stable\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         } 
-
         Write-Host -ForegroundColor Yellow "Done...`n"
     }
 
     # Clear Yandex
-    if (Test-Path "C:\Users\$user\AppData\Local\Yandex") {
-        Write-Host -ForegroundColor Yellow "Clearing Yandex Cache`n"
-        Foreach ($user in $Users) {
+    Write-Host -ForegroundColor Yellow "Clearing Yandex Cache`n"
+    Foreach ($user in $Users) {
+        if (Test-Path "C:\Users\$user\AppData\Local\Yandex") {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Yandex\YandexBrowser\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Yandex\YandexBrowser\User Data\Default\GPUCache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
             Remove-Item -Path "C:\Users\$user\AppData\Local\Yandex\YandexBrowser\User Data\Default\Media Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
@@ -178,7 +178,6 @@ Function Cleanup {
         Remove-Item -Path "C:\Users\$user\AppData\Local\CrashDumps\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
     }
     Write-Host -ForegroundColor Yellow "Done...`n"
-
     # Clear Windows Temp Folder
     Write-Host -ForegroundColor Yellow "Clearing Windows Temp Folder`n"
     Foreach ($user in $Users) {
@@ -204,7 +203,7 @@ Function Cleanup {
         }
         Write-Host -ForegroundColor Yellow "Done...`n" 
     }
-     
+
     # Delete Microsoft Teams Previous Version files
     Write-Host -ForegroundColor Yellow "Clearing Teams Previous version`n"
     Foreach ($user in $Users) {
@@ -236,7 +235,7 @@ Function Cleanup {
 
     # Clear HP Support Assistant Installation Folder
     if (Test-Path "C:\swsetup") {
-        Remove-Item -Path "C:\swsetup" -Force -ErrorAction SilentlyContinue -Verbose -WhatIf
+        Remove-Item -Path "C:\swsetup" -Force -ErrorAction SilentlyContinue -Verbose
     } 
 
     # Delete files older than 90 days from Downloads folder
