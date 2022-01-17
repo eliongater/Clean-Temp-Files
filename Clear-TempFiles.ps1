@@ -125,13 +125,25 @@ Function Cleanup {
     }
 
     # Clear Internet Explorer & Edge
-    Write-Host -ForegroundColor Yellow "Clearing Internet Explorer & Edge Cache`n"
+    Write-Host -ForegroundColor Yellow "Clearing Internet Explorer & Old Edge Cache`n"
     Foreach ($user in $Users) {
         Remove-Item -Path "C:\Users\$user\AppData\Local\Microsoft\Windows\Temporary Internet Files\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         Remove-Item -Path "C:\Users\$user\AppData\Local\Microsoft\Windows\INetCache\* " -Recurse -Force -ErrorAction SilentlyContinue -Verbose
         Remove-Item -Path "C:\Users\$user\AppData\Local\Microsoft\Windows\WebCache\* " -Recurse -Force -ErrorAction SilentlyContinue -Verbose
     }
     Write-Host -ForegroundColor Yellow "Done...`n"
+
+    # Clear Edge Chromium
+    Write-Host -ForegroundColor Yellow "Clearing Edge Chromium Cache`n"
+    Foreach ($user in $Users) {
+        if (Test-Path "C:\Users\$user\AppData\Local\Edge") {
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Edge\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            Remove-Item -Path "C:\Users\$user\AppData\Local\Edge\User Data\Default\GPUCache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            #Remove-Item -Path "C:\Users\$user\AppData\Local\Edge\User Data\Default\Media Cache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            #Remove-Item -Path "C:\Users\$user\AppData\Local\Edge\User Data\Default\Pepper Data" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+            #Remove-Item -Path "C:\Users\$user\AppData\Local\Edge\User Data\Default\Application Cache" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+        }
+        Write-Host -ForegroundColor Yellow "Done...`n" 
 
     # Clear Chromium
     Write-Host -ForegroundColor Yellow "Clearing Chromium Cache`n"
