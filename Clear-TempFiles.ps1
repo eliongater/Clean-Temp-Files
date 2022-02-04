@@ -135,6 +135,7 @@ Function Cleanup {
 
     # Clear Edge Chromium
     Write-Host -ForegroundColor Yellow "Clearing Edge Chromium Cache`n"
+    taskkill /F /IM msedge.exe
     Foreach ($user in $Users) {
         if (Test-Path "C:\Users\$user\AppData\Local\Microsoft\Edge\User Data") {
             Remove-Item -Path "C:\Users\$user\AppData\Local\Microsoft\Edge\User Data\Default\Cache\*" -Recurse -Force -ErrorAction SilentlyContinue -Verbose
