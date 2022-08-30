@@ -160,7 +160,8 @@ Function Cleanup {
             }
         }
         Write-Host -ForegroundColor Yellow "Done...`n" 
-
+    }
+    
     # Clear Chromium
     Write-Host -ForegroundColor Yellow "Clearing Chromium Cache`n"
     Foreach ($user in $Users) {
